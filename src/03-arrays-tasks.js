@@ -447,8 +447,8 @@ function sortCitiesArray(arr) {
  *           [0,0,0,1,0],
  *           [0,0,0,0,1]]
  */
-function getIdentityMatrix(/* n */) {
-  throw new Error('Not implemented');
+function getIdentityMatrix(n) {
+  return Array(n).fill(Array(n).fill(0)).map((v, i) => v.map((k, j) => (j === i ? 1 : k)));
 }
 
 /**
@@ -464,8 +464,8 @@ function getIdentityMatrix(/* n */) {
  *     0, 100 => [ 0, 1, 2, ..., 100 ]
  *     3, 3   => [ 3 ]
  */
-function getIntervalArray(/* start, end */) {
-  throw new Error('Not implemented');
+function getIntervalArray(start, end) {
+  return Array(end - start + 1).fill(start).map((v, i) => v + i);
 }
 
 /**
@@ -479,8 +479,8 @@ function getIntervalArray(/* start, end */) {
  *   [ 'a', 'a', 'a', 'a' ]  => [ 'a' ]
  *   [ 1, 1, 2, 2, 3, 3, 4, 4] => [ 1, 2, 3, 4]
  */
-function distinct(/* arr */) {
-  throw new Error('Not implemented');
+function distinct(arr) {
+  return arr.filter((v, i, a) => i === a.indexOf(v));
 }
 
 /**
@@ -513,8 +513,12 @@ function distinct(/* arr */) {
  *    "Poland" => ["Lodz"]
  *   }
  */
-function group(/* array, keySelector, valueSelector */) {
-  throw new Error('Not implemented');
+function group(array, keySelector, valueSelector) {
+  const countries = array.map((v) => keySelector(v)).filter((v, i, a) => i === a.indexOf(v));
+  const newMap = new Map(countries.map((v) => [v,
+    [...array.filter((k) => keySelector(k) === v)].map((l) => valueSelector(l))]));
+
+  return newMap;
 }
 
 /**
@@ -546,8 +550,9 @@ function selectMany(/* arr, childrenSelector */) {
  *   ['one','two','three'], [2]       => 'three'  (arr[2])
  *   [[[ 1, 2, 3]]], [ 0, 0, 1 ]      => 2        (arr[0][0][1])
  */
-function getElementByIndexes(/* arr, indexes */) {
-  throw new Error('Not implemented');
+function getElementByIndexes(arr, indexes) {
+  if (indexes.length === 1) return arr[indexes];
+  return getElementByIndexes(arr[indexes[0]], indexes.slice(1));
 }
 
 /**
@@ -568,8 +573,11 @@ function getElementByIndexes(/* arr, indexes */) {
  *   [ 1, 2, 3, 4, 5, 6, 7, 8 ]   =>  [ 5, 6, 7, 8, 1, 2, 3, 4 ]
  *
  */
-function swapHeadAndTail(/* arr */) {
-  throw new Error('Not implemented');
+function swapHeadAndTail(arr) {
+  if (arr.length % 2 === 0) return arr.slice(arr.length / 2).concat(arr.slice(0, arr.length / 2));
+  return arr.slice(Math.ceil(arr.length / 2))
+    .concat(arr.slice(Math.ceil(arr.length / 2) - 1, Math.ceil(arr.length / 2)))
+    .concat(arr.slice(0, Math.ceil(arr.length / 2) - 1));
 }
 
 module.exports = {
