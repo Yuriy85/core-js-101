@@ -19,15 +19,12 @@
  *    console.log(r.height);      // => 20
  *    console.log(r.getArea());   // => 200
  */
-class Rectangle {
-  constructor(width, height) {
-    this.width = width;
-    this.height = height;
-  }
-
-  getArea() {
-    return this.width * this.height;
-  }
+function Rectangle(width, height) {
+  return {
+    getArea: () => width * height,
+    width,
+    height,
+  };
 }
 
 /**
@@ -78,7 +75,7 @@ function fromJSON(proto, json) {
  *
  * Provided cssSelectorBuilder should be used as facade only to create your own classes,
  * for example the first method of cssSelectorBuilder can be like this:
- *   element: function(value) {
+ *   element: function(v) {
  *       return new MySuperBaseElementSelector(...)...
  *   },
  *
@@ -113,33 +110,121 @@ function fromJSON(proto, json) {
  *  For more examples see unit tests.
  */
 
+class BuildCSS {
+  constructor() {
+    this.tagname = {
+      element: '',
+      id: '',
+      class: [],
+      attr: [],
+      pseudoClass: [],
+      pseudoElement: '',
+    };
+  }
+
+  static error(i = 1) {
+    if (i) throw Error('Element, id and pseudo-element should not occur more then one time inside the selector');
+    else throw Error('Selector parts should be arranged in the following order: element, id, class, attribute, pseudo-class, pseudo-element');
+  }
+
+  verification(n) {
+    return Object.values(this.tagname).slice(n).reduce((acc, el) => acc + !!el.length, 0);
+  }
+
+  element(v) {
+    if (this.tagname.element) BuildCSS.error();
+    if (this.verification(0)) BuildCSS.error(0);
+    this.tagname.element = v;
+    return this;
+  }
+
+  id(v) {
+    if (this.tagname.id) BuildCSS.error();
+    if (this.verification(1)) BuildCSS.error(0);
+    this.tagname.id = v;
+    return this;
+  }
+
+  class(v) {
+    if (this.verification(3)) BuildCSS.error(0);
+    this.tagname.class = [...this.tagname.class, v];
+    return this;
+  }
+
+  attr(v) {
+    if (this.verification(4)) BuildCSS.error(0);
+    this.tagname.attr = [...this.tagname.attr, v];
+    return this;
+  }
+
+  pseudoClass(v) {
+    if (this.verification(5)) BuildCSS.error(0);
+    this.tagname.pseudoClass = [...this.tagname.pseudoClass, v];
+    return this;
+  }
+
+  pseudoElement(v) {
+    if (this.tagname.pseudoElement) BuildCSS.error();
+    this.tagname.pseudoElement = v;
+    return this;
+  }
+
+  combine(selector1, combinator, selector2) {
+    this.tagname.element = `${selector1.stringify()} ${combinator} ${selector2.stringify()}`;
+    return this;
+  }
+
+  stringify() {
+    let sel = '';
+    if (this.tagname.element) {
+      sel += this.tagname.element;
+    }
+    if (this.tagname.id) {
+      sel += `#${this.tagname.id}`;
+    }
+    if (this.tagname.class.length > 0) {
+      sel += `.${this.tagname.class.join('.')}`;
+    }
+    if (this.tagname.attr.length > 0) {
+      sel += `[${this.tagname.attr.join('][')}]`;
+    }
+    if (this.tagname.pseudoClass.length > 0) {
+      sel += `:${this.tagname.pseudoClass.join(':')}`;
+    }
+    if (this.tagname.pseudoElement) {
+      sel += `::${this.tagname.pseudoElement}`;
+    }
+    return sel;
+  }
+}
+
 const cssSelectorBuilder = {
-  element(/* value */) {
-    throw new Error('Not implemented');
+  element(v) {
+    return new BuildCSS().element(v);
   },
 
-  id(/* value */) {
-    throw new Error('Not implemented');
+  id(v) {
+    return new BuildCSS().id(v);
   },
 
-  class(/* value */) {
-    throw new Error('Not implemented');
+  class(v) {
+    return new BuildCSS().class(v);
   },
 
-  attr(/* value */) {
-    throw new Error('Not implemented');
+  attr(v) {
+    return new BuildCSS().attr(v);
   },
 
-  pseudoClass(/* value */) {
-    throw new Error('Not implemented');
+  pseudoClass(v) {
+    return new BuildCSS().pseudoClass(v);
   },
 
-  pseudoElement(/* value */) {
-    throw new Error('Not implemented');
+  pseudoElement(v) {
+    return new BuildCSS().pseudoElement(v);
   },
 
-  combine(/* selector1, combinator, selector2 */) {
-    throw new Error('Not implemented');
+  combine(selector1, combinator, selector2) {
+    return new BuildCSS().combine(selector1, combinator, selector2);
   },
 };
 
